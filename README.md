@@ -25,6 +25,9 @@ com `pandas.DataFrame`.
 O notebook cobre leitura tabular, seleção, cutflow, massas invariantes,
 normalização e estimativa simplificada de seção de choque.
 
+A seleção deste exemplo exige dois fótons no estado final e reconstrói a massa
+invariante \(m_{\gamma\gamma}\) do canal \(H\to\gamma\gamma\).
+
 ## Física e limitações
 
 Os arquivos `sinal.lhe.gz` e `fundo.lhe.gz` correspondem a `pp → H → γγ` e ao
