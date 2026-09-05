@@ -1,5 +1,7 @@
 # Análise LHE no CERN SWAN
 
+O arquivo `instrucoes_analise.txt` reúne as instruções completas das Partes 1 e 2.
+
 Este repositório é um exemplo público de análise de eventos em nível de gerador
 para o canal `pp → H → γγ`, comparado ao fundo contínuo `pp → γγ` sem Higgs.
 Ele foi preparado a partir do template FIS01214 e contém um notebook integrado
