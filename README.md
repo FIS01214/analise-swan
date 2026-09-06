@@ -18,7 +18,7 @@ Há duas versões do notebook:
    URL HTTPS `https://github.com/FIS01214/analise-swan.git`.
 2. Abra `notebooks/analise-consolidada-dataframe.ipynb` a partir do clone.
 3. Execute a primeira célula específica do SWAN. Ela verifica `numpy`, `pandas`,
-   `matplotlib` e `IPython` e tenta instalar apenas o que estiver ausente. Se a
+   PyROOT (`ROOT`) e `IPython` e tenta instalar apenas o que estiver ausente. Se a
    política do serviço bloquear a instalação, use o ambiente/projeto autorizado
    e execute a célula novamente.
 4. Execute as demais células na ordem. Os caminhos esperados apontam para
@@ -40,3 +40,5 @@ aleatória, dependente de `pT` e `eta`, apenas para fins didáticos. Ela não
 substitui reconstrução, resolução, trigger, pileup ou calibrações reais do CMS;
 a estimativa de seção de choque depende das hipóteses de aceitação, eficiência e
 luminosidade.
+
+Os notebooks ativam `%jsroot on` e exibem os canvases ROOT interativos diretamente no ambiente; os PNGs são mantidos apenas como arquivos de saída.
