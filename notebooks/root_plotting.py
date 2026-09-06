@@ -154,7 +154,11 @@ class RootAxis:
         x_max = 1.0 - float(self.pad.GetRightMargin())
         n_entries = sum(bool(getattr(obj, "GetTitle", lambda: "")()) for obj in self.objetos)
         y_min = 0.90 if n_entries <= 1 else 0.78
+        objetos_com_rotulo = [obj for obj in self.objetos if getattr(obj, "GetTitle", lambda: "")()]
         legend = self.pad.BuildLegend(x_min, y_min, x_max, 0.98)
+        # Preserve legend labels while suppressing ROOT's automatic plot title.
+        for objeto in objetos_com_rotulo:
+            objeto.SetTitle("")
         if legend:
             tamanho = max(0.025, min(0.06, float(fontsize) / 240.0)) if fontsize else 0.04
             legend.SetTextSize(tamanho)
