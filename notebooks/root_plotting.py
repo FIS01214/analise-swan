@@ -122,7 +122,7 @@ class RootAxis:
             eixo_x.SetLabelSize(0.04)
 
     def set_ylabel(self, texto):
-        self.pad.SetLeftMargin(0.15)
+        self.pad.SetLeftMargin(0.18)
         self._ylabel = str(texto)
         if self.objetos and hasattr(self.objetos[0], "GetYaxis"):
             eixo_y = self.objetos[0].GetYaxis()
@@ -152,7 +152,9 @@ class RootAxis:
         # Align the legend horizontally with the pad's internal data frame.
         x_min = float(self.pad.GetLeftMargin())
         x_max = 1.0 - float(self.pad.GetRightMargin())
-        legend = self.pad.BuildLegend(x_min, 0.78, x_max, 0.98)
+        n_entries = sum(bool(getattr(obj, "GetTitle", lambda: "")()) for obj in self.objetos)
+        y_min = 0.90 if n_entries <= 1 else 0.78
+        legend = self.pad.BuildLegend(x_min, y_min, x_max, 0.98)
         if legend:
             tamanho = max(0.025, min(0.06, float(fontsize) / 240.0)) if fontsize else 0.04
             legend.SetTextSize(tamanho)
