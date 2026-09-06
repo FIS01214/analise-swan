@@ -84,7 +84,10 @@ class RootAxis:
         graph.SetMarkerColor(_cor(ecolor or color))
         graph.SetLineColor(_cor(ecolor or color))
         graph.SetMarkerStyle(20)
-        self._desenhar(graph, "P SAME")
+        if label:
+            graph.SetTitle(str(label))
+        # O primeiro gráfico precisa criar os eixos; os seguintes são sobrepostos.
+        self._desenhar(graph, "AP" if not self.objetos else "P SAME")
         return graph
 
     def hist2d(self, x, y, bins=40, range=None, cmap=None, **_):
@@ -104,16 +107,20 @@ class RootAxis:
         graph.SetLineWidth(max(1, int(linewidth)))
         if label:
             graph.SetTitle(label)
-        self._desenhar(graph, "L SAME")
+        self._desenhar(graph, "AL" if not self.objetos else "L SAME")
         return graph
 
     def set_xlabel(self, texto):
         self.pad.SetBottomMargin(0.15)
         self._xlabel = str(texto)
+        if self.objetos and hasattr(self.objetos[0], "GetXaxis"):
+            self.objetos[0].GetXaxis().SetTitle(self._xlabel)
 
     def set_ylabel(self, texto):
         self.pad.SetLeftMargin(0.15)
         self._ylabel = str(texto)
+        if self.objetos and hasattr(self.objetos[0], "GetYaxis"):
+            self.objetos[0].GetYaxis().SetTitle(self._ylabel)
 
     def set_title(self, texto):
         self.pad.SetTitle(str(texto))
