@@ -125,8 +125,14 @@ class RootAxis:
     def set_title(self, texto):
         self.pad.SetTitle(str(texto))
 
-    def set_ylim(self, *_args, **_kwargs):
-        return None
+    def set_ylim(self, ymin, ymax):
+        """Aplicar explicitamente o intervalo Y ao primeiro objeto desenhado."""
+        self._ylim = (float(ymin), float(ymax))
+        for objeto in self.objetos:
+            if hasattr(objeto, "GetYaxis"):
+                eixo_y = objeto.GetYaxis()
+                if eixo_y:
+                    eixo_y.SetRangeUser(*self._ylim)
 
     def legend(self, *_, **__):
         self.pad.BuildLegend(0.58, 0.72, 0.90, 0.90)
