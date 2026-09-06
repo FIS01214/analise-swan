@@ -94,6 +94,8 @@ class RootAxis:
         (xmin, xmax), (ymin, ymax) = range
         nx, ny = (bins, bins) if isinstance(bins, int) else bins
         hist = ROOT.TH2D(f"h2_{self.indice}_{len(self.objetos)}", "", nx, xmin, xmax, ny, ymin, ymax)
+        # Reserve space for the Z-axis title and color scale on 2D plots.
+        self.pad.SetRightMargin(0.20)
         for xv, yv in zip(np.asarray(x, dtype=float), np.asarray(y, dtype=float)):
             hist.Fill(float(xv), float(yv))
         self._desenhar(hist, "COLZ")
@@ -114,13 +116,19 @@ class RootAxis:
         self.pad.SetBottomMargin(0.15)
         self._xlabel = str(texto)
         if self.objetos and hasattr(self.objetos[0], "GetXaxis"):
-            self.objetos[0].GetXaxis().SetTitle(self._xlabel)
+            eixo_x = self.objetos[0].GetXaxis()
+            eixo_x.SetTitle(self._xlabel)
+            eixo_x.SetTitleSize(0.05)
+            eixo_x.SetLabelSize(0.04)
 
     def set_ylabel(self, texto):
         self.pad.SetLeftMargin(0.15)
         self._ylabel = str(texto)
         if self.objetos and hasattr(self.objetos[0], "GetYaxis"):
-            self.objetos[0].GetYaxis().SetTitle(self._ylabel)
+            eixo_y = self.objetos[0].GetYaxis()
+            eixo_y.SetTitle(self._ylabel)
+            eixo_y.SetTitleSize(0.05)
+            eixo_y.SetLabelSize(0.04)
 
     def set_title(self, texto):
         self.pad.SetTitle(str(texto))
@@ -134,8 +142,18 @@ class RootAxis:
                 if eixo_y:
                     eixo_y.SetRangeUser(*self._ylim)
 
-    def legend(self, *_, **__):
-        self.pad.BuildLegend(0.58, 0.72, 0.90, 0.90)
+    def legend(self, *_, **kwargs):
+        """Draw a wide, legible legend in the upper plotting area."""
+        fontsize = kwargs.get("fontsize", 0)
+        if not hasattr(self, "_ylim"):
+            maximo = max((obj.GetMaximum() for obj in self.objetos if hasattr(obj, "GetMaximum")), default=0.0)
+            if maximo > 0:
+                self.set_ylim(0.0, 1.35 * float(maximo))
+        legend = self.pad.BuildLegend(0.08, 0.78, 0.96, 0.98)
+        if legend:
+            tamanho = max(0.025, min(0.06, float(fontsize) / 240.0)) if fontsize else 0.04
+            legend.SetTextSize(tamanho)
+        self.legend_obj = legend
 
 
 class RootFigure:
@@ -152,7 +170,12 @@ class RootFigure:
 
     def colorbar(self, objeto, ax=None, label=None, **_):
         if objeto:
-            objeto.GetZaxis().SetTitle(str(label or ""))
+            if ax is not None:
+                ax.pad.SetRightMargin(0.20)
+            eixo_z = objeto.GetZaxis()
+            eixo_z.SetTitle(str(label or ""))
+            eixo_z.SetTitleSize(0.05)
+            eixo_z.SetLabelSize(0.04)
 
     def savefig(self, destino, **_):
         destino = Path(destino)
