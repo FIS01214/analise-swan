@@ -11,6 +11,7 @@ from pathlib import Path
 
 import numpy as np
 import ROOT
+from IPython.display import Image, display
 
 ROOT.gROOT.SetBatch(True)
 ROOT.gStyle.SetOptStat(0)
@@ -143,6 +144,10 @@ class RootFigure:
         destino = Path(destino)
         destino.parent.mkdir(parents=True, exist_ok=True)
         self.canvas.SaveAs(str(destino))
+        # O modo batch evita janelas gráficas, mas não impede a exibição inline.
+        # Reabrimos o PNG salvo para que SWAN e Colab mostrem o gráfico no output.
+        if destino.suffix.lower() in {".png", ".jpg", ".jpeg"}:
+            display(Image(filename=str(destino)))
 
 
 class RootPlot:
