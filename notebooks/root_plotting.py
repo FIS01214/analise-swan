@@ -11,9 +11,10 @@ from pathlib import Path
 
 import numpy as np
 import ROOT
-from IPython.display import Image, display
+from IPython.display import display
 
-ROOT.gROOT.SetBatch(True)
+# O SWAN e o Colab exibem o TCanvas por JSROOT diretamente no notebook.
+ROOT.gROOT.SetBatch(False)
 ROOT.gStyle.SetOptStat(0)
 
 _CORES = {
@@ -144,15 +145,15 @@ class RootFigure:
         destino = Path(destino)
         destino.parent.mkdir(parents=True, exist_ok=True)
         self.canvas.SaveAs(str(destino))
-        # O modo batch evita janelas gráficas, mas não impede a exibição inline.
-        # Reabrimos o PNG salvo para que SWAN e Colab mostrem o gráfico no output.
-        if destino.suffix.lower() in {".png", ".jpg", ".jpeg"}:
-            display(Image(filename=str(destino)))
 
 
 class RootPlot:
+    def __init__(self):
+        self._last_figure = None
+
     def subplots(self, nrows=1, ncols=1, squeeze=True, **_):
         figura = RootFigure(nrows, ncols)
+        self._last_figure = figura
         eixos = np.asarray(figura.axes, dtype=object).reshape(nrows, ncols)
         if squeeze and nrows == 1 and ncols == 1:
             eixos = eixos[0, 0]
@@ -163,6 +164,10 @@ class RootPlot:
         return figura, eixos
 
     def show(self):
+        if self._last_figure is not None:
+            self._last_figure.canvas.Draw()
+            display(self._last_figure.canvas)
+            return self._last_figure.canvas
         return None
 
 
