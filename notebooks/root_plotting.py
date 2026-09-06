@@ -149,7 +149,10 @@ class RootAxis:
             maximo = max((obj.GetMaximum() for obj in self.objetos if hasattr(obj, "GetMaximum")), default=0.0)
             if maximo > 0:
                 self.set_ylim(0.0, 1.35 * float(maximo))
-        legend = self.pad.BuildLegend(0.08, 0.78, 0.96, 0.98)
+        # Align the legend horizontally with the pad's internal data frame.
+        x_min = float(self.pad.GetLeftMargin())
+        x_max = 1.0 - float(self.pad.GetRightMargin())
+        legend = self.pad.BuildLegend(x_min, 0.78, x_max, 0.98)
         if legend:
             tamanho = max(0.025, min(0.06, float(fontsize) / 240.0)) if fontsize else 0.04
             legend.SetTextSize(tamanho)
