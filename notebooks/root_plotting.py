@@ -89,6 +89,7 @@ class RootAxis:
         banda.SetFillStyle(3345)
         banda.SetLineColor(cor)
         banda.SetLineWidth(max(1, int(linewidth)))
+        banda.SetTitle("")
         self._desenhar(banda, "3" if not self.objetos else "3 SAME")
         if fmt and fmt != "none" and "-" in str(fmt):
             linha = ROOT.TGraph(len(x), array("d", x), array("d", y))
@@ -165,6 +166,11 @@ class RootAxis:
         y_min = 0.90 if n_entries <= 1 else 0.78
         objetos_com_rotulo = [obj for obj in self.objetos if getattr(obj, "GetTitle", lambda: "")()]
         legend = self.pad.BuildLegend(x_min, y_min, x_max, 0.98)
+        if legend:
+            for entrada in list(legend.GetListOfPrimitives()):
+                objeto = entrada.GetObject()
+                if objeto and objeto.InheritsFrom("TGraphAsymmErrors"):
+                    legend.GetListOfPrimitives().Remove(entrada)
         # Preserve legend labels while suppressing ROOT's automatic plot title.
         for objeto in objetos_com_rotulo:
             objeto.SetTitle("")
