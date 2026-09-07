@@ -75,20 +75,29 @@ class RootAxis:
         self._desenhar(hist, "HIST SAME" if self.objetos else "HIST")
         return hist
 
-    def errorbar(self, x, y, yerr=None, color="black", ecolor=None, label=None, **_):
+    def errorbar(self, x, y, yerr=None, color="black", ecolor=None, label=None,
+                 fmt="none", alpha=0.35, linewidth=1.0, **_):
         x = np.asarray(x, dtype=float)
         y = np.asarray(y, dtype=float)
         ey = np.zeros_like(y) if yerr is None else np.asarray(yerr, dtype=float)
-        graph = ROOT.TGraphErrors(len(x), array("d", x), array("d", y),
-                                  array("d", np.zeros_like(x)), array("d", ey))
-        graph.SetMarkerColor(_cor(ecolor or color))
-        graph.SetLineColor(_cor(ecolor or color))
-        graph.SetMarkerStyle(20)
-        if label:
-            graph.SetTitle(str(label))
-        # O primeiro gráfico precisa criar os eixos; os seguintes são sobrepostos.
-        self._desenhar(graph, "AP" if not self.objetos else "P SAME")
-        return graph
+        cor = _cor(ecolor or color)
+        banda = ROOT.TGraphAsymmErrors(len(x))
+        for indice, (x_valor, y_valor, erro) in enumerate(zip(x, y, ey)):
+            banda.SetPoint(indice, float(x_valor), float(y_valor))
+            banda.SetPointError(indice, 0.0, 0.0, float(erro), float(erro))
+        banda.SetFillColor(cor)
+        banda.SetFillStyle(3345)
+        banda.SetLineColor(cor)
+        banda.SetLineWidth(max(1, int(linewidth)))
+        self._desenhar(banda, "3" if not self.objetos else "3 SAME")
+        if fmt and fmt != "none" and "-" in str(fmt):
+            linha = ROOT.TGraph(len(x), array("d", x), array("d", y))
+            linha.SetLineColor(cor)
+            linha.SetLineWidth(max(1, int(linewidth)))
+            if label:
+                linha.SetTitle(str(label))
+            self._desenhar(linha, "L SAME")
+        return banda
 
     def hist2d(self, x, y, bins=40, range=None, cmap=None, **_):
         (xmin, xmax), (ymin, ymax) = range
