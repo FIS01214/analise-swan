@@ -204,6 +204,8 @@ class RootFigure:
     def savefig(self, destino, **_):
         destino = Path(destino)
         destino.parent.mkdir(parents=True, exist_ok=True)
+        self.canvas.Modified()
+        self.canvas.Update()
         self.canvas.SaveAs(str(destino))
         # Preserve a vector render alongside the raster output for notebook embedding.
         if destino.suffix.lower() in {".png", ".jpg", ".jpeg"}:
