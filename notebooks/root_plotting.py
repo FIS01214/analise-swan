@@ -205,6 +205,9 @@ class RootFigure:
         destino = Path(destino)
         destino.parent.mkdir(parents=True, exist_ok=True)
         self.canvas.SaveAs(str(destino))
+        # Preserve a vector render alongside the raster output for notebook embedding.
+        if destino.suffix.lower() in {".png", ".jpg", ".jpeg"}:
+            self.canvas.SaveAs(str(destino.with_suffix(".svg")))
 
 
 class RootPlot:
