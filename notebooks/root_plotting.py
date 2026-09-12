@@ -90,8 +90,10 @@ class RootAxis:
         banda.SetLineColor(cor)
         banda.SetLineWidth(max(1, int(linewidth)))
         banda.SetTitle("")
-        self._desenhar(banda, "3" if not self.objetos else "3 SAME")
-        if fmt and fmt != "none" and "-" in str(fmt):
+        tem_linha = bool(fmt and fmt != "none" and "-" in str(fmt))
+        opcao_banda = "A3" if not self.objetos and tem_linha else ("3" if not self.objetos else "3 SAME")
+        self._desenhar(banda, opcao_banda)
+        if tem_linha:
             linha = ROOT.TGraph(len(x), array("d", x), array("d", y))
             linha.SetLineColor(cor)
             linha.SetLineWidth(max(1, int(linewidth)))
@@ -204,6 +206,9 @@ class RootFigure:
     def savefig(self, destino, **_):
         destino = Path(destino)
         destino.parent.mkdir(parents=True, exist_ok=True)
+        self.canvas.Draw()
+        self.canvas.Modified()
+        self.canvas.Update()
         self.canvas.SaveAs(str(destino))
         # Preserve a vector render alongside the raster output for notebook embedding.
         if destino.suffix.lower() in {".png", ".jpg", ".jpeg"}:
