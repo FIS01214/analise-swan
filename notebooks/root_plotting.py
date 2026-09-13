@@ -121,7 +121,7 @@ class RootAxis:
                 banda.SetBinContent(indice, float(valor))
                 banda.SetBinError(indice, float(erro))
             banda.SetFillColor(cor)
-            banda.SetFillStyle(3345)  # hachura por bin para a incerteza
+            banda.SetFillStyle(3144)  # hachura por bin para a incerteza
             banda.SetLineColor(cor)
             banda.SetLineWidth(max(1, int(linewidth)))
             banda.SetTitle("")
