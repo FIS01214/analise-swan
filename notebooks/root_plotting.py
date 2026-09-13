@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from array import array
 from pathlib import Path
+import unicodedata
 
 import numpy as np
 import ROOT
@@ -30,14 +31,19 @@ def _cor(valor):
 
 
 def _normalizar_rotulo_root(valor):
-    """Converte símbolos Unicode comuns para a sintaxe TLatex do ROOT."""
-    return (
+    """Converte símbolos físicos e remove acentos frágeis para o ROOT."""
+    texto = (
         str(valor)
         .replace("Δ", "#Delta")
         .replace("γ", "#gamma")
         .replace("η", "#eta")
         .replace("φ", "#phi")
         .replace("μ", "#mu")
+    )
+    return "".join(
+        caractere
+        for caractere in unicodedata.normalize("NFKD", texto)
+        if not unicodedata.combining(caractere)
     )
 
 
@@ -69,7 +75,7 @@ class RootAxis:
         if histtype == "step":
             hist.SetFillStyle(0)
         if label:
-            hist.SetTitle(label)
+            hist.SetTitle(_normalizar_rotulo_root(label))
         self._desenhar(hist, "HIST SAME" if self.objetos else "HIST")
         return contagens, bordas, hist
 
@@ -83,7 +89,7 @@ class RootAxis:
         hist.SetLineWidth(max(1, int(linewidth)))
         hist.SetFillColorAlpha(_cor(color), float(alpha)) if fill else hist.SetFillStyle(0)
         if label:
-            hist.SetTitle(label)
+            hist.SetTitle(_normalizar_rotulo_root(label))
         self._desenhar(hist, "HIST SAME" if self.objetos else "HIST")
         return hist
 
@@ -97,13 +103,22 @@ class RootAxis:
         for indice, (x_valor, y_valor, erro) in enumerate(zip(x, y, ey)):
             banda.SetPoint(indice, float(x_valor), float(y_valor))
             banda.SetPointError(indice, 0.0, 0.0, float(erro), float(erro))
+        tem_linha = bool(fmt and fmt != "none" and "-" in str(fmt))
+        tem_pontos = "o" in str(fmt).lower()
+        tem_banda = fmt == "none" or tem_linha
         banda.SetFillColor(cor)
-        banda.SetFillStyle(3345)
+        banda.SetFillStyle(3345 if tem_banda else 0)
         banda.SetLineColor(cor)
         banda.SetLineWidth(max(1, int(linewidth)))
-        banda.SetTitle("")
-        tem_linha = bool(fmt and fmt != "none" and "-" in str(fmt))
-        opcao_banda = "A3" if not self.objetos and tem_linha else ("3" if not self.objetos else "3 SAME")
+        if tem_pontos:
+            banda.SetMarkerStyle(20)
+            banda.SetMarkerSize(0.9)
+            banda.SetMarkerColor(cor)
+        banda.SetTitle(_normalizar_rotulo_root(label) if not tem_banda and label else "")
+        if tem_banda:
+            opcao_banda = "A3" if not self.objetos and tem_linha else ("3" if not self.objetos else "3 SAME")
+        else:
+            opcao_banda = "AP" if not self.objetos else "P SAME"
         self._desenhar(banda, opcao_banda)
         if tem_linha:
             linha = ROOT.TGraph(len(x), array("d", x), array("d", y))
@@ -136,7 +151,7 @@ class RootAxis:
         graph.SetLineColor(_cor(color))
         graph.SetLineWidth(max(1, int(linewidth)))
         if label:
-            graph.SetTitle(label)
+            graph.SetTitle(_normalizar_rotulo_root(label))
         self._desenhar(graph, "AL" if not self.objetos else "L SAME")
         return graph
 
@@ -187,7 +202,8 @@ class RootAxis:
         if legend:
             for entrada in list(legend.GetListOfPrimitives()):
                 objeto = entrada.GetObject()
-                if objeto and objeto.InheritsFrom("TGraphAsymmErrors"):
+                if (objeto and objeto.InheritsFrom("TGraphAsymmErrors")
+                        and objeto.GetFillStyle() != 0):
                     legend.GetListOfPrimitives().Remove(entrada)
         # Preserve legend labels while suppressing ROOT's automatic plot title.
         for objeto in objetos_com_rotulo:
@@ -205,7 +221,7 @@ class RootFigure:
         self.axes = [RootAxis(self.canvas.cd(i + 1), i) for i in range(nrows * ncols)]
 
     def suptitle(self, texto, **_):
-        self.canvas.SetTitle(str(texto))
+        self.canvas.SetTitle(_normalizar_rotulo_root(texto))
 
     def tight_layout(self, **_):
         return None
@@ -215,7 +231,7 @@ class RootFigure:
             if ax is not None:
                 ax.pad.SetRightMargin(0.20)
             eixo_z = objeto.GetZaxis()
-            eixo_z.SetTitle(str(label or ""))
+            eixo_z.SetTitle(_normalizar_rotulo_root(label or ""))
             eixo_z.SetTitleSize(0.05)
             eixo_z.SetLabelSize(0.04)
 
