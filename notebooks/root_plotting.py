@@ -226,9 +226,6 @@ class RootFigure:
         self.canvas.Modified()
         self.canvas.Update()
         self.canvas.SaveAs(str(destino))
-        # Preserve a vector render alongside the raster output for notebook embedding.
-        if destino.suffix.lower() in {".png", ".jpg", ".jpeg"}:
-            self.canvas.SaveAs(str(destino.with_suffix(".svg")))
 
 
 class RootPlot:
