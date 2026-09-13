@@ -10,6 +10,7 @@ from array import array
 from pathlib import Path
 import unicodedata
 import re
+from itertools import count
 
 import numpy as np
 import ROOT
@@ -25,6 +26,12 @@ _CORES = {
     "black": ROOT.kBlack,
     "tab:green": ROOT.kGreen + 2,
 }
+_OBJETOS = count()
+
+
+def _nome_objeto(prefixo):
+    """Gera nomes ROOT unicos sem poluir as legendas."""
+    return f"{prefixo}_{next(_OBJETOS)}"
 
 
 def _cor(valor):
@@ -73,7 +80,7 @@ class RootAxis:
         valores = np.asarray(valores, dtype=float)
         pesos = None if weights is None else np.asarray(weights, dtype=float)
         contagens, bordas = np.histogram(valores, bins=bins, range=range, weights=pesos)
-        hist = ROOT.TH1D(f"h{self.indice}_{len(self.objetos)}", "", len(bordas) - 1,
+        hist = ROOT.TH1D(_nome_objeto("h"), "", len(bordas) - 1,
                          array("d", bordas))
         for i, valor in enumerate(contagens, start=1):
             hist.SetBinContent(i, float(valor))
@@ -89,7 +96,7 @@ class RootAxis:
 
     def stairs(self, valores, bordas, color="black", label=None, linewidth=1.5,
                fill=False, alpha=1.0, **_):
-        hist = ROOT.TH1D(f"h{self.indice}_{len(self.objetos)}", "",
+        hist = ROOT.TH1D(_nome_objeto("h"), "",
                          len(bordas) - 1, array("d", np.asarray(bordas, dtype=float)))
         for i, valor in enumerate(np.asarray(valores, dtype=float), start=1):
             hist.SetBinContent(i, float(valor))
@@ -115,7 +122,7 @@ class RootAxis:
             bordas = (np.concatenate(([x[0] - (meios[0] - x[0])], meios,
                                       [x[-1] + (x[-1] - meios[-1])]))
                       if len(x) > 1 else np.array([x[0] - 0.5, x[0] + 0.5]))
-            banda = ROOT.TH1D(f"e{self.indice}_{len(self.objetos)}", "",
+            banda = ROOT.TH1D(_nome_objeto("erro"), "",
                               len(x), array("d", bordas))
             for indice, (valor, erro) in enumerate(zip(y, ey), start=1):
                 banda.SetBinContent(indice, float(valor))
@@ -157,7 +164,7 @@ class RootAxis:
     def hist2d(self, x, y, bins=40, range=None, cmap=None, **_):
         (xmin, xmax), (ymin, ymax) = range
         nx, ny = (bins, bins) if isinstance(bins, int) else bins
-        hist = ROOT.TH2D(f"h2_{self.indice}_{len(self.objetos)}", "", nx, xmin, xmax, ny, ymin, ymax)
+        hist = ROOT.TH2D(_nome_objeto("h2"), "", nx, xmin, xmax, ny, ymin, ymax)
         # Reserve space for the Z-axis title and color scale on 2D plots.
         self.pad.SetRightMargin(0.20)
         for xv, yv in zip(np.asarray(x, dtype=float), np.asarray(y, dtype=float)):
@@ -219,13 +226,15 @@ class RootAxis:
         n_entries = sum(bool(getattr(obj, "GetTitle", lambda: "")()) for obj in self.objetos)
         y_min = 0.90 if n_entries <= 1 else 0.78
         objetos_com_rotulo = [obj for obj in self.objetos if getattr(obj, "GetTitle", lambda: "")()]
-        legend = self.pad.BuildLegend(x_min, y_min, x_max, 0.98)
-        if legend:
-            for entrada in list(legend.GetListOfPrimitives()):
-                objeto = entrada.GetObject()
-                if (objeto and objeto.InheritsFrom("TGraphAsymmErrors")
-                        and objeto.GetFillStyle() != 0):
-                    legend.GetListOfPrimitives().Remove(entrada)
+        legend = ROOT.TLegend(x_min, y_min, x_max, 0.98)
+        legend.SetBorderSize(0)
+        legend.SetFillStyle(0)
+        for objeto in objetos_com_rotulo:
+            nome = str(objeto.GetName())
+            if nome.startswith(("e1_", "e2_", "erro_")):
+                continue
+            legend.AddEntry(objeto, objeto.GetTitle(), "l")
+        legend.Draw()
         # Preserve legend labels while suppressing ROOT's automatic plot title.
         for objeto in objetos_com_rotulo:
             objeto.SetTitle("")
