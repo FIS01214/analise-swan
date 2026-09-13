@@ -107,25 +107,38 @@ class RootAxis:
         y = np.asarray(y, dtype=float)
         ey = np.zeros_like(y) if yerr is None else np.asarray(yerr, dtype=float)
         cor = _cor(ecolor or color)
-        banda = ROOT.TGraphAsymmErrors(len(x))
-        for indice, (x_valor, y_valor, erro) in enumerate(zip(x, y, ey)):
-            banda.SetPoint(indice, float(x_valor), float(y_valor))
-            banda.SetPointError(indice, 0.0, 0.0, float(erro), float(erro))
         tem_linha = bool(fmt and fmt != "none" and "-" in str(fmt))
         tem_pontos = "o" in str(fmt).lower()
         tem_banda = fmt == "none" or tem_linha
-        banda.SetFillColor(cor)
-        banda.SetFillStyle(3002 if tem_banda else 0)
-        banda.SetLineColor(cor)
-        banda.SetLineWidth(max(1, int(linewidth)))
-        if tem_pontos:
-            banda.SetMarkerStyle(20)
-            banda.SetMarkerSize(0.9)
-            banda.SetMarkerColor(cor)
-        banda.SetTitle(_normalizar_rotulo_root(label) if not tem_banda and label else "")
         if tem_banda:
-            opcao_banda = "A3" if not self.objetos and tem_linha else ("3" if not self.objetos else "3 SAME")
+            meios = 0.5 * (x[:-1] + x[1:]) if len(x) > 1 else np.array([])
+            bordas = (np.concatenate(([x[0] - (meios[0] - x[0])], meios,
+                                      [x[-1] + (x[-1] - meios[-1])]))
+                      if len(x) > 1 else np.array([x[0] - 0.5, x[0] + 0.5]))
+            banda = ROOT.TH1D(f"e{self.indice}_{len(self.objetos)}", "",
+                              len(x), array("d", bordas))
+            for indice, (valor, erro) in enumerate(zip(y, ey), start=1):
+                banda.SetBinContent(indice, float(valor))
+                banda.SetBinError(indice, float(erro))
+            banda.SetFillColor(cor)
+            banda.SetFillStyle(3345)  # hachura por bin para a incerteza
+            banda.SetLineColor(cor)
+            banda.SetLineWidth(max(1, int(linewidth)))
+            banda.SetTitle("")
+            opcao_banda = "E2" if not self.objetos else "E2 SAME"
         else:
+            banda = ROOT.TGraphAsymmErrors(len(x))
+            for indice, (x_valor, y_valor, erro) in enumerate(zip(x, y, ey)):
+                banda.SetPoint(indice, float(x_valor), float(y_valor))
+                banda.SetPointError(indice, 0.0, 0.0, float(erro), float(erro))
+            banda.SetFillStyle(0)
+            banda.SetLineColor(cor)
+            banda.SetLineWidth(max(1, int(linewidth)))
+            if tem_pontos:
+                banda.SetMarkerStyle(20)
+                banda.SetMarkerSize(0.9)
+                banda.SetMarkerColor(cor)
+            banda.SetTitle(_normalizar_rotulo_root(label) if label else "")
             opcao_banda = "AP" if not self.objetos else "P SAME"
         self._desenhar(banda, opcao_banda)
         if tem_linha:
