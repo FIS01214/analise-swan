@@ -115,7 +115,7 @@ class RootAxis:
         tem_pontos = "o" in str(fmt).lower()
         tem_banda = fmt == "none" or tem_linha
         banda.SetFillColor(cor)
-        banda.SetFillStyle(3345 if tem_banda else 0)
+        banda.SetFillStyle(3002 if tem_banda else 0)
         banda.SetLineColor(cor)
         banda.SetLineWidth(max(1, int(linewidth)))
         if tem_pontos:
