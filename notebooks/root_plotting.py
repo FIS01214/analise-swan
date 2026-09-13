@@ -29,6 +29,18 @@ def _cor(valor):
     return _CORES.get(valor, ROOT.kBlack)
 
 
+def _normalizar_rotulo_root(valor):
+    """Converte símbolos Unicode comuns para a sintaxe TLatex do ROOT."""
+    return (
+        str(valor)
+        .replace("Δ", "#Delta")
+        .replace("γ", "#gamma")
+        .replace("η", "#eta")
+        .replace("φ", "#phi")
+        .replace("μ", "#mu")
+    )
+
+
 class RootAxis:
     def __init__(self, pad, indice):
         self.pad = pad
@@ -97,8 +109,12 @@ class RootAxis:
             linha = ROOT.TGraph(len(x), array("d", x), array("d", y))
             linha.SetLineColor(cor)
             linha.SetLineWidth(max(1, int(linewidth)))
+            if "o" in str(fmt).lower():
+                linha.SetMarkerStyle(20)
+                linha.SetMarkerSize(0.9)
+                linha.SetMarkerColor(cor)
             if label:
-                linha.SetTitle(str(label))
+                linha.SetTitle(_normalizar_rotulo_root(label))
             self._desenhar(linha, "L SAME")
         return banda
 
@@ -126,7 +142,7 @@ class RootAxis:
 
     def set_xlabel(self, texto):
         self.pad.SetBottomMargin(0.15)
-        self._xlabel = str(texto)
+        self._xlabel = _normalizar_rotulo_root(texto)
         if self.objetos and hasattr(self.objetos[0], "GetXaxis"):
             eixo_x = self.objetos[0].GetXaxis()
             eixo_x.SetTitle(self._xlabel)
@@ -135,7 +151,7 @@ class RootAxis:
 
     def set_ylabel(self, texto):
         self.pad.SetLeftMargin(0.18)
-        self._ylabel = str(texto)
+        self._ylabel = _normalizar_rotulo_root(texto)
         if self.objetos and hasattr(self.objetos[0], "GetYaxis"):
             eixo_y = self.objetos[0].GetYaxis()
             eixo_y.SetTitle(self._ylabel)
@@ -143,7 +159,7 @@ class RootAxis:
             eixo_y.SetLabelSize(0.04)
 
     def set_title(self, texto):
-        self.pad.SetTitle(str(texto))
+        self.pad.SetTitle(_normalizar_rotulo_root(texto))
 
     def set_ylim(self, ymin, ymax):
         """Aplicar explicitamente o intervalo Y ao primeiro objeto desenhado."""
