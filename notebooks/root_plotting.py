@@ -9,6 +9,7 @@ from __future__ import annotations
 from array import array
 from pathlib import Path
 import unicodedata
+import re
 
 import numpy as np
 import ROOT
@@ -39,7 +40,14 @@ def _normalizar_rotulo_root(valor):
         .replace("η", "#eta")
         .replace("φ", "#phi")
         .replace("μ", "#mu")
+        .replace("θ", "#theta")
+        .replace("λ", "#lambda")
     )
+    texto = re.sub(r"(?<![#A-Za-z])DeltaR(?![A-Za-z])", "#Delta R", texto, flags=re.IGNORECASE)
+    texto = re.sub(r"(?<![#A-Za-z])Delta(?![A-Za-z])", "#Delta", texto, flags=re.IGNORECASE)
+    for nome, simbolo in (("gamma", "#gamma"), ("eta", "#eta"), ("phi", "#phi")):
+        texto = re.sub(rf"(?<![#A-Za-z]){nome}(?![A-Za-z])", simbolo, texto, flags=re.IGNORECASE)
+    texto = re.sub(r"(?<![#A-Za-z])pT(?![A-Za-z])", "#it{p}_{T}", texto)
     return "".join(
         caractere
         for caractere in unicodedata.normalize("NFKD", texto)
@@ -216,7 +224,7 @@ class RootAxis:
 
 class RootFigure:
     def __init__(self, nrows, ncols):
-        self.canvas = ROOT.TCanvas("c", "FIS01214", 1200, 800)
+        self.canvas = ROOT.TCanvas("c", "FIS01214", 2400, 1600)
         self.canvas.Divide(ncols, nrows)
         self.axes = [RootAxis(self.canvas.cd(i + 1), i) for i in range(nrows * ncols)]
 
