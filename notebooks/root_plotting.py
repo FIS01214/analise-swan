@@ -86,7 +86,7 @@ class RootAxis:
         labels = []
         for texto, x, fonte, tamanho in (
             ("CMS", 0.18, 62, 0.040),
-            ("Simulation", 0.30, 52, 0.031),
+            ("Event Generation", 0.30, 52, 0.031),
             ("13 TeV", 0.63, 42, 0.028),
         ):
             rotulo = ROOT.TLatex()
