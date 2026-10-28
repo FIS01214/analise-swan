@@ -73,9 +73,11 @@ class RootAxis:
         self.objetos = []
         self.legend_obj = None
         self._cms_labels = []
+        # Reserve a dedicated strip above the frame for the CMS out-of-frame label.
+        self.pad.SetTopMargin(0.18)
 
     def draw_cms(self):
-        """Draw the CMS simulation label inside the plotting frame."""
+        """Draw the CMS simulation label above the plotting frame."""
         if not self.objetos:
             return []
         if self._cms_labels:
@@ -91,7 +93,7 @@ class RootAxis:
             rotulo.SetNDC()
             rotulo.SetTextFont(fonte)
             rotulo.SetTextSize(tamanho)
-            rotulo.DrawLatex(x, 0.955, texto)
+            rotulo.DrawLatex(x, 0.965, texto)
             labels.append(rotulo)
         self._cms_labels = labels
         self.pad.Modified()
@@ -276,7 +278,7 @@ class RootAxis:
 
 class RootFigure:
     def __init__(self, nrows, ncols):
-        self.canvas = ROOT.TCanvas("c", "FIS01214", 2400, 1600)
+        self.canvas = ROOT.TCanvas("c", "FIS01214", 3000, 2000)
         self.canvas.Divide(ncols, nrows)
         self.axes = [RootAxis(self.canvas.cd(i + 1), i) for i in range(nrows * ncols)]
 
