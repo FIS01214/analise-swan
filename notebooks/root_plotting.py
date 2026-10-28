@@ -19,6 +19,10 @@ from IPython.display import display
 # O SWAN e o Colab exibem o TCanvas por JSROOT diretamente no notebook.
 ROOT.gROOT.SetBatch(False)
 ROOT.gStyle.SetOptStat(0)
+ROOT.gStyle.SetTextFont(42)
+ROOT.gStyle.SetLabelFont(42, "XYZ")
+ROOT.gStyle.SetTitleFont(42, "XYZ")
+ROOT.gStyle.SetLegendFont(42)
 
 _CORES = {
     "tab:blue": ROOT.kBlue + 1,
@@ -68,6 +72,31 @@ class RootAxis:
         self.indice = indice
         self.objetos = []
         self.legend_obj = None
+        self._cms_labels = []
+
+    def draw_cms(self):
+        """Draw the CMS simulation label inside the plotting frame."""
+        if not self.objetos:
+            return []
+        if self._cms_labels:
+            return self._cms_labels
+        self.pad.cd()
+        labels = []
+        for texto, x, fonte, tamanho in (
+            ("CMS", 0.18, 62, 0.040),
+            ("Simulation", 0.30, 52, 0.031),
+            ("13 TeV", 0.63, 42, 0.028),
+        ):
+            rotulo = ROOT.TLatex()
+            rotulo.SetNDC()
+            rotulo.SetTextFont(fonte)
+            rotulo.SetTextSize(tamanho)
+            rotulo.DrawLatex(x, 0.955, texto)
+            labels.append(rotulo)
+        self._cms_labels = labels
+        self.pad.Modified()
+        self.pad.Update()
+        return labels
 
     def _desenhar(self, objeto, opcao=""):
         self.pad.cd()
@@ -229,6 +258,7 @@ class RootAxis:
         legend = ROOT.TLegend(x_min, y_min, x_max, 0.98)
         legend.SetBorderSize(0)
         legend.SetFillStyle(0)
+        legend.SetTextFont(42)
         for objeto in objetos_com_rotulo:
             nome = str(objeto.GetName())
             if nome.startswith(("e1_", "e2_", "erro_")):
@@ -268,6 +298,8 @@ class RootFigure:
     def savefig(self, destino, **_):
         destino = Path(destino)
         destino.parent.mkdir(parents=True, exist_ok=True)
+        for eixo in self.axes:
+            eixo.draw_cms()
         self.canvas.Draw()
         self.canvas.Modified()
         self.canvas.Update()
@@ -292,6 +324,8 @@ class RootPlot:
 
     def show(self):
         if self._last_figure is not None:
+            for eixo in self._last_figure.axes:
+                eixo.draw_cms()
             self._last_figure.canvas.Draw()
             display(self._last_figure.canvas)
             return self._last_figure.canvas
