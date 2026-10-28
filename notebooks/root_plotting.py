@@ -85,9 +85,9 @@ class RootAxis:
         self.pad.cd()
         labels = []
         for texto, x, fonte, tamanho, alinhamento in (
-            ("CMS", 0.18, 62, 0.040, 11),
-            ("Event Generation", 0.30, 52, 0.031, 11),
-            ("13 TeV", 0.98, 42, 0.028, 31),
+            ("CMS", 0.18, 62, 0.055, 11),
+            ("Event Generation", 0.30, 52, 0.055, 11),
+            ("13 TeV", 0.98, 42, 0.055, 31),
         ):
             rotulo = ROOT.TLatex()
             rotulo.SetNDC()
@@ -221,8 +221,8 @@ class RootAxis:
         if self.objetos and hasattr(self.objetos[0], "GetXaxis"):
             eixo_x = self.objetos[0].GetXaxis()
             eixo_x.SetTitle(self._xlabel)
-            eixo_x.SetTitleSize(0.05)
-            eixo_x.SetLabelSize(0.04)
+            eixo_x.SetTitleSize(0.055)
+            eixo_x.SetLabelSize(0.045)
 
     def set_ylabel(self, texto):
         self.pad.SetLeftMargin(0.18)
@@ -230,8 +230,8 @@ class RootAxis:
         if self.objetos and hasattr(self.objetos[0], "GetYaxis"):
             eixo_y = self.objetos[0].GetYaxis()
             eixo_y.SetTitle(self._ylabel)
-            eixo_y.SetTitleSize(0.05)
-            eixo_y.SetLabelSize(0.04)
+            eixo_y.SetTitleSize(0.055)
+            eixo_y.SetLabelSize(0.045)
 
     def set_title(self, texto):
         self.pad.SetTitle(_normalizar_rotulo_root(texto))
@@ -272,7 +272,7 @@ class RootAxis:
         for objeto in objetos_com_rotulo:
             objeto.SetTitle("")
         if legend:
-            tamanho = max(0.025, min(0.06, float(fontsize) / 240.0)) if fontsize else 0.04
+            tamanho = max(0.035, min(0.07, float(fontsize) / 240.0)) if fontsize else 0.05
             legend.SetTextSize(tamanho)
         self.legend_obj = legend
 
