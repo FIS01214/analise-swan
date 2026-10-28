@@ -84,15 +84,16 @@ class RootAxis:
             return self._cms_labels
         self.pad.cd()
         labels = []
-        for texto, x, fonte, tamanho in (
-            ("CMS", 0.18, 62, 0.040),
-            ("Event Generation", 0.30, 52, 0.031),
-            ("13 TeV", 0.63, 42, 0.028),
+        for texto, x, fonte, tamanho, alinhamento in (
+            ("CMS", 0.18, 62, 0.040, 11),
+            ("Event Generation", 0.30, 52, 0.031, 11),
+            ("13 TeV", 0.98, 42, 0.028, 31),
         ):
             rotulo = ROOT.TLatex()
             rotulo.SetNDC()
             rotulo.SetTextFont(fonte)
             rotulo.SetTextSize(tamanho)
+            rotulo.SetTextAlign(alinhamento)
             rotulo.DrawLatex(x, 0.965, texto)
             labels.append(rotulo)
         self._cms_labels = labels
